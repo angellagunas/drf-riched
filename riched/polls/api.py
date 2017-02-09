@@ -1,18 +1,17 @@
+
 # -*- coding: utf-8 -*-
-from drf_riched.core.api import mixins
+from some.core.api import mixins
 
-from {{project_name}}.api.v1.routers import router
-from {{project_name}}.core.api.viewsets import GenericViewSet
+from riched.api.v1.routers import router
+from riched.core.api.viewsets import GenericViewSet
 
-from {{project_name}}.{{app_name}} import serializers
-from {{project_name}}.{{app_name}}.models import (
-    {% for model_name in model_list %} 
-    {{model_name}},
-    {% endfor %}
+from riched.polls import serializers
+from riched.polls.models import (
+    Poll,
 )
 
 
-class {{model_name}}ViewSet(
+class PollViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -20,22 +19,19 @@ class {{model_name}}ViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet
 ):
-    list_serializer_class = serializers.{{model_name}}ListSerializer
-    retrieve_serializer_class = serializers.{{model_name}}RetrieveSerializer
-    create_serializer_class = serializers.{{model_name}}CreateSerializer
-    update_serializer_class = serializers.{{model_name}}UpdateSerializer
+    list_serializer_class = serializers.PollListSerializer
+    retrieve_serializer_class = serializers.PollRetrieveSerializer
+    create_serializer_class = serializers.PollCreateSerializer
+    update_serializer_class = serializers.PollUpdateSerializer
 
-    settings_retrieve_serializer_class = ChannelSettingsSerializer
-    settings_update_serializer_class = ChannelSettingsCreateSerializer
-
-    permission_classes = [] # put your custom permissions here
+    permission_classes = []  # put your custom permissions here
 
     def create(self, request, *args, **kwargs):
         """
-        Allows create a {{model_name}} in {{project_name}}.
+        Allows create a Poll in riched.
         ---
-        request_serializer: serializers.{{model_name}}CreateSerializer
-        response_serializer: serializers.{{model_name}}RetrieveSerializer
+        request_serializer: serializers.PollCreateSerializer
+        response_serializer: serializers.PollRetrieveSerializer
         responseMessages:
             - code: 201
                 message: CREATED
@@ -50,15 +46,15 @@ class {{model_name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model_name}}ViewSet, self).create(
+        return super(PollViewSet, self).create(
             request, *args, **kwargs
         )
 
     def list(self, request, *args, **kwargs):
         """
-        Returns a list of {{project_name}} {{model_name}}.
+        Returns a list of riched Poll.
         ---
-        response_serializer: serializers.{{model_name}}ListSerializer
+        response_serializer: serializers.PollListSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -71,15 +67,15 @@ class {{model_name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model_name}}ViewSet, self).list(
+        return super(PollViewSet, self).list(
             request, *args, **kwargs
         )
 
     def retrieve(self, request, *args, **kwargs):
         """
-        Retrieves information about a {{project_name}} {{model_name}}.
+        Retrieves information about a riched Poll.
         ---
-        response_serializer: serializers.{{model_name}}RetrieveSerializer
+        response_serializer: serializers.PollRetrieveSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -94,16 +90,16 @@ class {{model_name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model_name}}ViewSet, self).retrieve(
+        return super(PollViewSet, self).retrieve(
             request, *args, **kwargs
         )
 
     def partial_update(self, request, pk=None):
         """
-        Updates a {{model_name}}.
+        Updates a Poll.
         ---
-        request_serializer: serializers.{{model_name}}UpdateSerializer
-        response_serializer: serializers.{{model_name}}RetrieveSerializer
+        request_serializer: serializers.PollUpdateSerializer
+        response_serializer: serializers.PollRetrieveSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -120,11 +116,11 @@ class {{model_name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model_name}}ViewSet, self).partial_update(request)
+        return super(PollViewSet, self).partial_update(request)
 
     def destroy(self, request, pk=None):
         """
-        Deletes a {{model_name}}.
+        Deletes a Poll.
         ---
         responseMessages:
             - code: 204
@@ -142,16 +138,18 @@ class {{model_name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model_name}}ViewSet, self).destroy(request)
+        return super(PollViewSet, self).destroy(request)
 
     def get_queryset(self, *args, **kwargs):
-        queryset = {{model_name}}.objects.all()
+        queryset = Poll.objects.all()
         return queryset
 
 
+
+
 router.register(
-    r'channels',
-    ChannelViewSet,
-    base_name="channels",
+    r"polls",
+    PollViewSet,
+    base_name="polls",
 )
 
