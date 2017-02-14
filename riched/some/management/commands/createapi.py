@@ -5,6 +5,7 @@ import sys
 from django.apps import apps
 from django.core.management import BaseCommand
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.template import Template, Context
 
 from . import api_template
@@ -24,6 +25,16 @@ class Command(BaseCommand):
 
     def handle(self, *app_labels, **options):
 
+        exclude_apps = ['admin', 'contenttypes', 'auth', 'sessions']
+
+        if len(app_labels) == 0:
+            app_labels = ContentType.objects.exclude(
+                app_label__in=exclude_apps
+            ).values_list(
+                'app_label',
+                flat=True
+            ).distinct()
+
         # Make sure the app they asked for exists
         app_labels = set(app_labels)
         bad_app_labels = set()
@@ -33,10 +44,17 @@ class Command(BaseCommand):
         for app_label in app_labels:
             try:
                 app = apps.get_app_config(app_label)
+                models = []
+                for m in apps.get_app_config(app_label).get_models():
+                    if hasattr(m._meta, 'api_drf'):
+                        if m._meta.api_drf is True:
+                            models.append(m)
+
                 given_apps_path.append({
                     'path': app.path,
                     'label': app_label,
-                    'api_path': "{0}/api.py".format(app.path)
+                    'api_path': "{0}/api.py".format(app.path),
+                    'models': [m.__name__ for m in models]  # noqa
                 })
             except LookupError:
                 bad_app_labels.add(app_label)
@@ -55,11 +73,12 @@ class Command(BaseCommand):
                     self.stdout.write(
                         'Writing api to app: {0}'.format(app['label'])
                     )
+
                     with open(app["api_path"], "w") as f:
                         context = Context({
                             'project_name': PROJECT_NAME,
                             'app_name': app['label'],
-                            'model_list': ['Poll']
+                            'model_list': app['models']
                         })
 
                         template = Template(api_template.API_TEMPLATE)
@@ -69,6 +88,3 @@ class Command(BaseCommand):
                     self.stdout.write(
                         'api is already exist in app: {}'.format(app['label'])
                     )
-
-    def write_api(self, **options):
-        print 'run run run :), creating api, u are cool!'

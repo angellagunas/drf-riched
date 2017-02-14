@@ -9,5 +9,8 @@ class Poll(models.Model):
 
 
 class Question(models.Model):
+    class Meta:
+        api_drf = True
+
     title = models.CharField(max_length=100)
     body = models.CharField(max_length=100)
