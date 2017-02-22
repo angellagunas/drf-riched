@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
-API_TEMPLATE = '''
-# -*- coding: utf-8 -*-
-from some.core.api import mixins
+API_TEMPLATE = '''# -*- coding: utf-8 -*-
+from some.management.core.api import mixins
 
-from {{project_name}}.api.v1.routers import router
-from {{project_name}}.core.api.viewsets import GenericViewSet
+from {{project_name}}.api.v{{api_version}}.routers import router
+from some.management.core.api.viewsets import GenericViewSet
 
 from {{project_name}}.{{app_name}} import serializers
 from {{project_name}}.{{app_name}}.models import (
-    {% for model_name in model_list %}
-    {{model_name}},
-    {% endfor %}
+    {% for model_name in model_list %}{{model_name}},{% endfor %}
 )
 
-{% for model_name in model_list %}
-class {{model_name}}ViewSet(
+
+{% for model_name in model_list %}class {{model_name}}ViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -145,9 +142,7 @@ class {{model_name}}ViewSet(
 
     def get_queryset(self, *args, **kwargs):
         queryset = {{model_name}}.objects.all()
-        return queryset
-{% endfor %}
-
+        return queryset{% endfor %}
 
 {% for model_name in model_list %}
 router.register(
@@ -155,5 +150,22 @@ router.register(
     {{model_name}}ViewSet,
     base_name="{{model_name|lower}}s",
 )
+{% endfor %}
+'''
+
+SERIALIZER_TEMPLATE = '''# -*- coding: utf-8 -*-
+from some.management.core.api.serializers import ModelSerializer
+
+from {{project_name}}.{{app_name}}.models import (
+    {% for model_name in model_list %}{{model_name}},{% endfor %}
+)
+
+
+{% for model_name in model_list %}class {{model_name}}Serializer(ModelSerializer):
+
+    class Meta:
+        model = {{model_name}}
+        fields = ('__all__')
+
 {% endfor %}
 '''

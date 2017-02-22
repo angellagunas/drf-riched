@@ -1,15 +1,12 @@
-
 # -*- coding: utf-8 -*-
-from some.core.api import mixins
+from some.management.core.api import mixins
 
 from riched.api.v1.routers import router
-from riched.core.api.viewsets import GenericViewSet
+from some.management.core.api.viewsets import GenericViewSet
 
 from riched.polls import serializers
 from riched.polls.models import (
-    
     Question,
-    
 )
 
 
@@ -147,11 +144,8 @@ class QuestionViewSet(
         return queryset
 
 
-
-
 router.register(
     r"questions",
     QuestionViewSet,
     base_name="questions",
 )
-

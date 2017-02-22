@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.template import Template, Context
 
-from . import api_template
+from . import templates
 
 
 class Command(BaseCommand):
@@ -23,8 +23,10 @@ class Command(BaseCommand):
             help='Name of the application where you want create the api.',
         )
 
-    def handle(self, *app_labels, **options):
+    def write(self, msg):
+        self.stderr.write(msg)
 
+    def handle(self, *app_labels, **options):
         exclude_apps = ['admin', 'contenttypes', 'auth', 'sessions']
 
         if len(app_labels) == 0:
@@ -54,37 +56,63 @@ class Command(BaseCommand):
                     'path': app.path,
                     'label': app_label,
                     'api_path': "{0}/api.py".format(app.path),
-                    'models': [m.__name__ for m in models]  # noqa
+                    'serializer_path': "{0}/serializer.py".format(app.path),
+                    'models': [m.__name__ for m in models],
+                    'extra_options': {}
                 })
             except LookupError:
                 bad_app_labels.add(app_label)
 
         if bad_app_labels:
             for app_label in bad_app_labels:
-                self.stderr.write(
-                        "App '%s' could not be found. "
-                        "Is it in INSTALLED_APPS?" % app_label
-                )
+                msg = "App '%s' could not be found." % app_label
+                self.write(msg)
             sys.exit(2)
 
+        #
+        # Validate applications path exists
+        #
         if given_apps_path:
             for app in given_apps_path:
-                if not os.path.isfile("{}/api.py".format(app['path'])):
-                    self.stdout.write(
-                        'Writing api to app: {0}'.format(app['label'])
-                    )
+                if not os.path.isfile(app['api_path']):
+                    msg = 'serializer is already exist in app: %s' % app['label']  # noqa
+                    self.write(msg)
 
-                    with open(app["api_path"], "w") as f:
-                        context = Context({
-                            'project_name': PROJECT_NAME,
-                            'app_name': app['label'],
-                            'model_list': app['models']
-                        })
+                if not os.path.isfile(app['serializer_path']):
+                    msg = 'api is already exist in app: %s' % app['label']
+                    self.write(msg)
+            sys.exit(2)
 
-                        template = Template(api_template.API_TEMPLATE)
-                        api_text = template.render(context)
-                        f.write(api_text)
-                else:
-                    self.stdout.write(
-                        'api is already exist in app: {}'.format(app['label'])
-                    )
+        else:
+            self.write("Apps could not be found.")
+            sys.exit(2)
+
+        for app in given_apps_path:
+            #
+            # Crate serializer file
+            #
+            with open(app["serializer_path"], "w") as f:
+                context = Context({
+                    'project_name': PROJECT_NAME,
+                    'app_name': app['label'],
+                    'model_list': app['models']
+                })
+
+                template = Template(templates.SERIALIZER_TEMPLATE)
+                api_text = template.render(context)
+                f.write(api_text)
+
+            #
+            # Create api file
+            #
+            with open(app["api_path"], "w") as f:
+                context = Context({
+                    'project_name': PROJECT_NAME,
+                    'app_name': app['label'],
+                    'api_version': '1',
+                    'model_list': app['models']
+                })
+
+                template = Template(templates.API_TEMPLATE)
+                api_text = template.render(context)
+                f.write(api_text)
