@@ -5,12 +5,10 @@ from riched.api.v1.routers import router
 from some.management.core.api.viewsets import GenericViewSet
 
 from riched.polls import serializers
-from riched.polls.models import (
-    Question,
-)
+from riched.polls.models import Poll
 
 
-class QuestionViewSet(
+class PollViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -18,19 +16,19 @@ class QuestionViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet
 ):
-    list_serializer_class = serializers.QuestionListSerializer
-    retrieve_serializer_class = serializers.QuestionRetrieveSerializer
-    create_serializer_class = serializers.QuestionCreateSerializer
-    update_serializer_class = serializers.QuestionUpdateSerializer
+    list_serializer_class = serializers.PollListSerializer
+    retrieve_serializer_class = serializers.PollRetrieveSerializer
+    create_serializer_class = serializers.PollCreateSerializer
+    update_serializer_class = serializers.PollUpdateSerializer
 
     permission_classes = []  # put your custom permissions here
 
     def create(self, request, *args, **kwargs):
         """
-        Allows create a Question in riched.
+        Allows create a Poll in riched.
         ---
-        request_serializer: serializers.QuestionCreateSerializer
-        response_serializer: serializers.QuestionRetrieveSerializer
+        request_serializer: serializers.PollCreateSerializer
+        response_serializer: serializers.PollRetrieveSerializer
         responseMessages:
             - code: 201
                 message: CREATED
@@ -45,15 +43,15 @@ class QuestionViewSet(
         produces:
             - application/json
         """
-        return super(QuestionViewSet, self).create(
+        return super(PollViewSet, self).create(
             request, *args, **kwargs
         )
 
     def list(self, request, *args, **kwargs):
         """
-        Returns a list of riched Question.
+        Returns a list of riched Poll.
         ---
-        response_serializer: serializers.QuestionListSerializer
+        response_serializer: serializers.PollListSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -66,15 +64,15 @@ class QuestionViewSet(
         produces:
             - application/json
         """
-        return super(QuestionViewSet, self).list(
+        return super(PollViewSet, self).list(
             request, *args, **kwargs
         )
 
     def retrieve(self, request, *args, **kwargs):
         """
-        Retrieves information about a riched Question.
+        Retrieves information about a riched Poll.
         ---
-        response_serializer: serializers.QuestionRetrieveSerializer
+        response_serializer: serializers.PollRetrieveSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -89,16 +87,16 @@ class QuestionViewSet(
         produces:
             - application/json
         """
-        return super(QuestionViewSet, self).retrieve(
+        return super(PollViewSet, self).retrieve(
             request, *args, **kwargs
         )
 
     def partial_update(self, request, pk=None):
         """
-        Updates a Question.
+        Updates a Poll.
         ---
-        request_serializer: serializers.QuestionUpdateSerializer
-        response_serializer: serializers.QuestionRetrieveSerializer
+        request_serializer: serializers.PollUpdateSerializer
+        response_serializer: serializers.PollRetrieveSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -115,11 +113,11 @@ class QuestionViewSet(
         produces:
             - application/json
         """
-        return super(QuestionViewSet, self).partial_update(request)
+        return super(PollViewSet, self).partial_update(request)
 
     def destroy(self, request, pk=None):
         """
-        Deletes a Question.
+        Deletes a Poll.
         ---
         responseMessages:
             - code: 204
@@ -137,15 +135,15 @@ class QuestionViewSet(
         produces:
             - application/json
         """
-        return super(QuestionViewSet, self).destroy(request)
+        return super(PollViewSet, self).destroy(request)
 
     def get_queryset(self, *args, **kwargs):
-        queryset = Question.objects.all()
+        queryset = Poll.objects.all()
         return queryset
 
 
 router.register(
-    r"questions",
-    QuestionViewSet,
-    base_name="questions",
+    r"polls",
+    PollViewSet,
+    base_name="polls",
 )

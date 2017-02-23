@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-API_TEMPLATE = '''# -*- coding: utf-8 -*-
 from some.management.core.api import mixins
 
-from {{project_name}}.api.v{{api_version}}.routers import router
+from riched.api.v1.routers import router
 from some.management.core.api.viewsets import GenericViewSet
 
-from {{project_name}}.{{app_name}} import serializers
-from {{project_name}}.{{app_name}}.models import {{model.name}}
+from riched.polls import serializers
+from riched.polls.models import Question
 
 
-class {{model.name}}ViewSet(
+class QuestionViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -17,19 +16,19 @@ class {{model.name}}ViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet
 ):
-    list_serializer_class = serializers.{{model.name}}ListSerializer
-    retrieve_serializer_class = serializers.{{model.name}}RetrieveSerializer
-    create_serializer_class = serializers.{{model.name}}CreateSerializer
-    update_serializer_class = serializers.{{model.name}}UpdateSerializer
+    list_serializer_class = serializers.QuestionListSerializer
+    retrieve_serializer_class = serializers.QuestionRetrieveSerializer
+    create_serializer_class = serializers.QuestionCreateSerializer
+    update_serializer_class = serializers.QuestionUpdateSerializer
 
     permission_classes = []  # put your custom permissions here
 
     def create(self, request, *args, **kwargs):
         """
-        Allows create a {{model.name}} in {{project_name}}.
+        Allows create a Question in riched.
         ---
-        request_serializer: serializers.{{model.name}}CreateSerializer
-        response_serializer: serializers.{{model.name}}RetrieveSerializer
+        request_serializer: serializers.QuestionCreateSerializer
+        response_serializer: serializers.QuestionRetrieveSerializer
         responseMessages:
             - code: 201
                 message: CREATED
@@ -44,15 +43,15 @@ class {{model.name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model.name}}ViewSet, self).create(
+        return super(QuestionViewSet, self).create(
             request, *args, **kwargs
         )
 
     def list(self, request, *args, **kwargs):
         """
-        Returns a list of {{project_name}} {{model.name}}.
+        Returns a list of riched Question.
         ---
-        response_serializer: serializers.{{model.name}}ListSerializer
+        response_serializer: serializers.QuestionListSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -65,15 +64,15 @@ class {{model.name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model.name}}ViewSet, self).list(
+        return super(QuestionViewSet, self).list(
             request, *args, **kwargs
         )
 
     def retrieve(self, request, *args, **kwargs):
         """
-        Retrieves information about a {{project_name}} {{model.name}}.
+        Retrieves information about a riched Question.
         ---
-        response_serializer: serializers.{{model.name}}RetrieveSerializer
+        response_serializer: serializers.QuestionRetrieveSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -88,16 +87,16 @@ class {{model.name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model.name}}ViewSet, self).retrieve(
+        return super(QuestionViewSet, self).retrieve(
             request, *args, **kwargs
         )
 
     def partial_update(self, request, pk=None):
         """
-        Updates a {{model.name}}.
+        Updates a Question.
         ---
-        request_serializer: serializers.{{model.name}}UpdateSerializer
-        response_serializer: serializers.{{model.name}}RetrieveSerializer
+        request_serializer: serializers.QuestionUpdateSerializer
+        response_serializer: serializers.QuestionRetrieveSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -114,11 +113,11 @@ class {{model.name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model.name}}ViewSet, self).partial_update(request)
+        return super(QuestionViewSet, self).partial_update(request)
 
     def destroy(self, request, pk=None):
         """
-        Deletes a {{model.name}}.
+        Deletes a Question.
         ---
         responseMessages:
             - code: 204
@@ -136,68 +135,15 @@ class {{model.name}}ViewSet(
         produces:
             - application/json
         """
-        return super({{model.name}}ViewSet, self).destroy(request)
+        return super(QuestionViewSet, self).destroy(request)
 
     def get_queryset(self, *args, **kwargs):
-        queryset = {{model.name}}.objects.all()
+        queryset = Question.objects.all()
         return queryset
 
 
 router.register(
-    r"{{model.name|lower}}s",
-    {{model.name}}ViewSet,
-    base_name="{{model.name|lower}}s",
+    r"questions",
+    QuestionViewSet,
+    base_name="questions",
 )
-'''
-
-SERIALIZER_TEMPLATE = '''# -*- coding: utf-8 -*-
-from some.management.core.api.serializers import ModelSerializer
-
-from {{project_name}}.{{app_name}}.models import {{model.name}}
-
-
-class {{model.name}}Serializer(ModelSerializer):
-
-    class Meta:
-        model = {{model.name}}
-        fields = ({%if model.fields%}{%for field in model.fields%}
-            '{{field}}',{%endfor%}{%else%}
-            '__all__'{%endif%}
-        )
-'''
-
-ROUTER_TEMPLATE = '''# -*- coding: utf-8 -*-
-from some.management.core.api.routers import DefaultRouter
-
-router = DefaultRouter(trailing_slash=False)
-'''
-
-API_V1_URLS_TEMPLATE = '''# -*- coding: utf-8 -*-
-from .routers import router
-from ..autodiscover import autodiscover
-
-
-autodiscover()
-
-urlpatterns = router.urls
-'''
-
-API_URLS_TEMPLATE = '''# -*- coding: utf-8 -*-
-from django.conf import settings
-from django.conf.urls import include, url
-
-from . import v1
-
-
-urlpatterns = [
-    url(
-        r'^v1/', include(v1.urls, namespace='v1')
-    ),
-]
-
-urlpatterns += [
-    url(
-        r'^docs/', include('rest_framework_swagger.urls')
-    ),
-]
-'''
