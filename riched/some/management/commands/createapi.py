@@ -26,6 +26,14 @@ class Command(BaseCommand):
     def write(self, msg):
         self.stderr.write(msg)
 
+    def create_api_dir(self, project_path):
+        api_uri = 'api'
+        if not os.path.exists(api_uri):
+            self.write('writing api path')
+            return os.mkdir(api_uri)
+
+        return True
+
     def get_app_labels(self, app_labels):
         exclude_apps = settings.DRF_SETTINGS['exclude_apps']
 
@@ -160,6 +168,10 @@ class Command(BaseCommand):
         PROJECT_NAME = dj_settings.BASE_DIR.split('/')[-1]
         API_VERSION = settings.DRF_SETTINGS['version']
         app_labels = self.get_app_labels(app_labels)
+
+        self.create_api_dir(PROJECT_NAME)
+
+        sys.exit(2)
 
         #
         # Make sure the app they asked for exists
