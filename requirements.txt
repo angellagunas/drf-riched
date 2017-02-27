@@ -1,2 +1,4 @@
 django
 djangorestframework
+django-rest-framework-nested
+django-rest-swagger

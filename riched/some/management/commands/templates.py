@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 API_TEMPLATE = '''# -*- coding: utf-8 -*-
 from some.management.core.api import mixins
-
-from {{project_name}}.api.v{{api_version}}.routers import router
 from some.management.core.api.viewsets import GenericViewSet
 
 from {{project_name}}.{{app_name}} import serializers
@@ -141,13 +139,18 @@ class {{model.name}}ViewSet(
     def get_queryset(self, *args, **kwargs):
         queryset = {{model.name}}.objects.all()
         return queryset
+'''
+
+ROUTE_TEMPLATE = '''# -*- coding: utf-8 -*-
+from . import viewsets
+from {{project_name}}.api.v{{api_version}}.routers import router
 
 
-router.register(
+{% for model in models %}router.register(
     r"{{model.name|lower}}s",
-    {{model.name}}ViewSet,
+    viewsets.{{model.name}}ViewSet,
     base_name="{{model.name|lower}}s",
-)
+){% if not forloop.last %}\n\n{%endif%}{% endfor %}
 '''
 
 SERIALIZER_TEMPLATE = '''# -*- coding: utf-8 -*-
@@ -186,12 +189,10 @@ API_URLS_TEMPLATE = '''# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.conf.urls import include, url
 
-from . import v1
-
 
 urlpatterns = [
     url(
-        r'^v1/', include(v1.urls, namespace='v1')
+        r'^v1/', include('api.v1.urls', namespace='v1')
     ),
 ]
 
@@ -200,4 +201,24 @@ urlpatterns += [
         r'^docs/', include('rest_framework_swagger.urls')
     ),
 ]
+'''
+
+AUTODISCOVER_TEMPLATE = '''# -*- coding: utf-8 -*-
+from importlib import import_module
+
+
+def autodiscover():
+    """
+    Perform an autodiscover of an viewsets.py file in the installed apps to
+    generate the routes of the registered viewsets.
+    """
+    for app in settings.INSTALLED_APPS:
+        try:
+            import_module('.'.join((app, 'viewsets')))
+
+        except ImportError, e:
+            if e.message != 'No module named api' and settings.DEBUG:
+                print e.message
+            else:
+                pass
 '''
