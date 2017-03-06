@@ -69,7 +69,7 @@ class Command(BaseCommand):
         else:
             return True
 
-    def create_api_files(self, api_uri):
+    def create_api_files(self, api_uri, apps):
         autodiscover_path = self.join_label_app(api_uri, 'autodiscover')
         api_urls_path = self.join_label_app(api_uri, 'urls')
 
@@ -81,8 +81,12 @@ class Command(BaseCommand):
         #
         # Create autodiscover file into api folder
         #
+        context = Context({
+            'apps': apps,
+        })
         self.get_or_create_file(
             autodiscover_path,
+            context=context,
             template=templates.AUTODISCOVER_TEMPLATE
         )
 
@@ -119,7 +123,7 @@ class Command(BaseCommand):
            template=templates.ROUTER_TEMPLATE
         )
 
-    def create_api_folder(self, project_path):
+    def create_api_folder(self, project_path, apps):
         api_url = 'api'
         api_version_url = self.join_label_app(api_url, 'v1', False)
         #
@@ -131,7 +135,7 @@ class Command(BaseCommand):
         #
         # second, create files
         #
-        self.create_api_files(api_url)
+        self.create_api_files(api_url, apps)
         self.create_api_version_files(api_version_url)
         return True
 
@@ -170,7 +174,7 @@ class Command(BaseCommand):
             'model': model
         })
 
-        self.create_file(
+        self.get_or_create_file(
             serializer_path,
             context,
             templates.SERIALIZER_TEMPLATE
@@ -197,7 +201,7 @@ class Command(BaseCommand):
             'model': model
         })
 
-        self.create_file(viewset_path, context, templates.API_TEMPLATE)
+        self.get_or_create_file(viewset_path, context, templates.API_TEMPLATE)
 
     def write_routes(self, config_app, models, project_name, api_version):
         route_path = self.join_label_app(
@@ -213,7 +217,7 @@ class Command(BaseCommand):
         #
         # create routes file in app root, for example: polls/routes.py
         #
-        self.create_file(route_path, context, templates.ROUTE_TEMPLATE)
+        self.get_or_create_file(route_path, context, templates.ROUTE_TEMPLATE)
 
     def get_meta_model_config(self, model):
         if hasattr(model._meta, 'drf_config'):
@@ -225,7 +229,7 @@ class Command(BaseCommand):
                 if 'fields' in model._meta.drf_config:
                     model_config['fields'] = model._meta.drf_config['fields']
 
-            return model_config
+                return model_config
 
         return None
 
@@ -291,7 +295,7 @@ class Command(BaseCommand):
         API_VERSION = settings.DRF_SETTINGS['version']
         app_labels = self.get_app_labels(app_labels)
 
-        self.create_api_folder(PROJECT_NAME)
+        self.create_api_folder(PROJECT_NAME, app_labels)
 
         #
         # Make sure the app they asked for exists

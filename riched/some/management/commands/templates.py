@@ -3,8 +3,8 @@ API_TEMPLATE = '''# -*- coding: utf-8 -*-
 from some.management.core.api import mixins
 from some.management.core.api.viewsets import GenericViewSet
 
-from {{project_name}}.{{app_name}} import serializers
-from {{project_name}}.{{app_name}}.models import {{model.name}}
+from {{app_name}}.serializers import {{model.name|lower}} as serializers
+from {{app_name}}.models import {{model.name}}
 
 
 class {{model.name}}ViewSet(
@@ -15,10 +15,11 @@ class {{model.name}}ViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet
 ):
-    list_serializer_class = serializers.{{model.name}}ListSerializer
-    retrieve_serializer_class = serializers.{{model.name}}RetrieveSerializer
-    create_serializer_class = serializers.{{model.name}}CreateSerializer
-    update_serializer_class = serializers.{{model.name}}UpdateSerializer
+    serializer_class = serializers.{{model.name}}Serializer
+    list_serializer_class = serializers.{{model.name}}Serializer
+    retrieve_serializer_class = serializers.{{model.name}}Serializer
+    create_serializer_class = serializers.{{model.name}}Serializer
+    update_serializer_class = serializers.{{model.name}}Serializer
 
     permission_classes = []  # put your custom permissions here
 
@@ -26,8 +27,8 @@ class {{model.name}}ViewSet(
         """
         Allows create a {{model.name}} in {{project_name}}.
         ---
-        request_serializer: serializers.{{model.name}}CreateSerializer
-        response_serializer: serializers.{{model.name}}RetrieveSerializer
+        request_serializer: serializers.{{model.name}}Serializer
+        response_serializer: serializers.{{model.name}}Serializer
         responseMessages:
             - code: 201
                 message: CREATED
@@ -50,7 +51,7 @@ class {{model.name}}ViewSet(
         """
         Returns a list of {{project_name}} {{model.name}}.
         ---
-        response_serializer: serializers.{{model.name}}ListSerializer
+        response_serializer: serializers.{{model.name}}Serializer
         responseMessages:
             - code: 200
               message: OK
@@ -71,7 +72,7 @@ class {{model.name}}ViewSet(
         """
         Retrieves information about a {{project_name}} {{model.name}}.
         ---
-        response_serializer: serializers.{{model.name}}RetrieveSerializer
+        response_serializer: serializers.{{model.name}}Serializer
         responseMessages:
             - code: 200
               message: OK
@@ -94,8 +95,8 @@ class {{model.name}}ViewSet(
         """
         Updates a {{model.name}}.
         ---
-        request_serializer: serializers.{{model.name}}UpdateSerializer
-        response_serializer: serializers.{{model.name}}RetrieveSerializer
+        request_serializer: serializers.{{model.name}}Serializer
+        response_serializer: serializers.{{model.name}}Serializer
         responseMessages:
             - code: 200
               message: OK
@@ -142,13 +143,15 @@ class {{model.name}}ViewSet(
 '''
 
 ROUTE_TEMPLATE = '''# -*- coding: utf-8 -*-
-from . import viewsets
-from {{project_name}}.api.v{{api_version}}.routers import router
+from .viewsets import (
+    {%for model in models%}{{model.name|lower}},{% if not forloop.last %}\n    {%endif%}{%endfor%}
+)
+from api.v{{api_version}}.routers import router
 
 
 {% for model in models %}router.register(
     r"{{model.name|lower}}s",
-    viewsets.{{model.name}}ViewSet,
+    {{model.name|lower}}.{{model.name}}ViewSet,
     base_name="{{model.name|lower}}s",
 ){% if not forloop.last %}\n\n{%endif%}{% endfor %}
 '''
@@ -156,7 +159,7 @@ from {{project_name}}.api.v{{api_version}}.routers import router
 SERIALIZER_TEMPLATE = '''# -*- coding: utf-8 -*-
 from some.management.core.api.serializers import ModelSerializer
 
-from {{project_name}}.{{app_name}}.models import {{model.name}}
+from {{app_name}}.models import {{model.name}}
 
 
 class {{model.name}}Serializer(ModelSerializer):
@@ -165,7 +168,7 @@ class {{model.name}}Serializer(ModelSerializer):
         model = {{model.name}}
         fields = ({%if model.fields%}{%for field in model.fields%}
             '{{field}}',{%endfor%}{%else%}
-            '__all__'{%endif%}
+            'id',{%endif%}
         )
 '''
 
@@ -186,7 +189,6 @@ urlpatterns = router.urls
 '''
 
 API_URLS_TEMPLATE = '''# -*- coding: utf-8 -*-
-from django.conf import settings
 from django.conf.urls import include, url
 
 
@@ -195,16 +197,9 @@ urlpatterns = [
         r'^v1/', include('api.v1.urls', namespace='v1')
     ),
 ]
-
-urlpatterns += [
-    url(
-        r'^docs/', include('rest_framework_swagger.urls')
-    ),
-]
 '''
 
 AUTODISCOVER_TEMPLATE = '''# -*- coding: utf-8 -*-
-from importlib import import_module
 
 
 def autodiscover():
@@ -212,13 +207,5 @@ def autodiscover():
     Perform an autodiscover of an viewsets.py file in the installed apps to
     generate the routes of the registered viewsets.
     """
-    for app in settings.INSTALLED_APPS:
-        try:
-            import_module('.'.join((app, 'viewsets')))
-
-        except ImportError, e:
-            if e.message != 'No module named api' and settings.DEBUG:
-                print e.message
-            else:
-                pass
+    {% for app in apps %}from {{app}} import routes  # noqa{% if not forloop.last %}\n{%endif%}{% endfor %}
 '''

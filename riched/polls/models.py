@@ -6,7 +6,7 @@ from django.db import models
 class Poll(models.Model):
     class Meta:
         drf_config = {
-            'api': True
+            'api': False
         }
     title = models.CharField(max_length=100)
     body = models.CharField(max_length=100)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from some.management.core.api.serializers import ModelSerializer
 
-from riched.polls.models import Question
+from polls.models import Question
 
 
 class QuestionSerializer(ModelSerializer):

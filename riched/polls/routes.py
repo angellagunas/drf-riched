@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
-from . import viewsets
-from riched.api.v1.routers import router
-
-
-router.register(
-    r"polls",
-    viewsets.PollViewSet,
-    base_name="polls",
+from .viewsets import (
+    question,
 )
+from api.v1.routers import router
+
 
 router.register(
     r"questions",
-    viewsets.QuestionViewSet,
+    question.QuestionViewSet,
     base_name="questions",
 )

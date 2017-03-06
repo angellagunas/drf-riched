@@ -2,8 +2,8 @@
 from some.management.core.api import mixins
 from some.management.core.api.viewsets import GenericViewSet
 
-from riched.polls import serializers
-from riched.polls.models import Question
+from polls.serializers import question as serializers
+from polls.models import Question
 
 
 class QuestionViewSet(
@@ -14,10 +14,11 @@ class QuestionViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet
 ):
-    list_serializer_class = serializers.QuestionListSerializer
-    retrieve_serializer_class = serializers.QuestionRetrieveSerializer
-    create_serializer_class = serializers.QuestionCreateSerializer
-    update_serializer_class = serializers.QuestionUpdateSerializer
+    serializer_class = serializers.QuestionSerializer
+    list_serializer_class = serializers.QuestionSerializer
+    retrieve_serializer_class = serializers.QuestionSerializer
+    create_serializer_class = serializers.QuestionSerializer
+    update_serializer_class = serializers.QuestionSerializer
 
     permission_classes = []  # put your custom permissions here
 
@@ -25,8 +26,8 @@ class QuestionViewSet(
         """
         Allows create a Question in riched.
         ---
-        request_serializer: serializers.QuestionCreateSerializer
-        response_serializer: serializers.QuestionRetrieveSerializer
+        request_serializer: serializers.QuestionSerializer
+        response_serializer: serializers.QuestionSerializer
         responseMessages:
             - code: 201
                 message: CREATED
@@ -49,7 +50,7 @@ class QuestionViewSet(
         """
         Returns a list of riched Question.
         ---
-        response_serializer: serializers.QuestionListSerializer
+        response_serializer: serializers.QuestionSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -70,7 +71,7 @@ class QuestionViewSet(
         """
         Retrieves information about a riched Question.
         ---
-        response_serializer: serializers.QuestionRetrieveSerializer
+        response_serializer: serializers.QuestionSerializer
         responseMessages:
             - code: 200
               message: OK
@@ -93,8 +94,8 @@ class QuestionViewSet(
         """
         Updates a Question.
         ---
-        request_serializer: serializers.QuestionUpdateSerializer
-        response_serializer: serializers.QuestionRetrieveSerializer
+        request_serializer: serializers.QuestionSerializer
+        response_serializer: serializers.QuestionSerializer
         responseMessages:
             - code: 200
               message: OK
