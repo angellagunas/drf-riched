@@ -6,8 +6,18 @@ from django.db import models
 class Poll(models.Model):
     class Meta:
         drf_config = {
-            'api': False
+            'api': {
+                'scaffolding': True,
+                'methods': ['CREATE', 'UPDATE'],
+                'serializer': {
+                    'scaffolding': True,
+                    'fields': [
+                        'title'
+                    ]
+                }
+            }
         }
+
     title = models.CharField(max_length=100)
     body = models.CharField(max_length=100)
 
@@ -15,11 +25,12 @@ class Poll(models.Model):
 class Question(models.Model):
     class Meta:
         drf_config = {
-            'api': True,
-            'fields': [
-                'title'
-            ]
+            'api': {
+                'scaffolding': True,
+                'serializer': {
+                    'scaffolding': True
+                }
+            }
         }
-
     title = models.CharField(max_length=100)
     body = models.CharField(max_length=100)
